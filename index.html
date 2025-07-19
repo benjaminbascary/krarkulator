@@ -42,8 +42,8 @@
     const pct = x => nf.format(100 * x) + ' %';
 
     function ritShown() { 
-        const ritual = document.getElementById('ritual').children[1];
-        ritual.classList.toggle('hidden', !document.getElementById('chkRitual').checked); 
+        const ritualInputs = document.getElementById('ritual').children[2];
+        ritualInputs.classList.toggle('hidden', !document.getElementById('chkRitual').checked); 
     }
 
     const pSuccess = T => 1 - Math.pow(0.5, 1 << T);
