@@ -312,6 +312,7 @@
         let totalTreasures = 0;
         let totalManaSpent = 0;
         let totalManaGained = 0;
+        let totalStorm = 0;
         let log = [];
         let resolved = false;
 
@@ -324,25 +325,26 @@
             iterations++;
             totalManaSpent += costPerCast;
             let copies = 0;
-            let stormCount = 1;
 
             for (let trigger = 0; trigger < TRIG; trigger++) {
                 const success = Math.random() < p;
                 if (success) {
                     copies++;
-                    stormCount++;
                 }
             }
 
             totalCopies += copies;
-            if (isSKA) totalTreasures += stormCount;
+            // Storm count: original spell + any that resolve (only when original resolves)
+            const currentStorm = 1; // This cast
+            if (isSKA) totalTreasures += currentStorm;
             
-            log.push(`Cast ${iterations}: ${copies} copies created, storm ${stormCount}${isSKA ? `, ${stormCount} treasures` : ''}`);
+            log.push(`Cast ${iterations}: ${copies} copies created${isSKA ? `, +${currentStorm} treasure` : ''}`);
 
             if (copies < TRIG) {
                 resolved = true;
+                totalStorm += currentStorm; // Only count storm when spell resolves
                 if (isRitual) totalManaGained += valuePerResolve;
-                log.push(`✅ Original resolves! ${isRitual ? `+${valuePerResolve} mana` : ''}`);
+                log.push(`✅ Original resolves!${isRitual ? ` +${valuePerResolve} mana` : ''}`);
             } else {
                 log.push(`🔄 All copies created, recasting...`);
             }
@@ -358,7 +360,7 @@
 <strong>📊 Simulation Complete</strong><br>
 🔄 Iterations: ${iterations}<br>
 📋 Total copies created: ${totalCopies}<br>
-⚡ Total storm count: ${totalCopies + iterations}<br>`;
+⚡ Final storm count: ${totalStorm}<br>`;
 
         if (isSKA) {
             summary += `🏺 Total treasures: ${totalTreasures}<br>`;
