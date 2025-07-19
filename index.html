@@ -138,7 +138,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>🔮 (ugly) Krark Calculator <span style="font-size: 0.3em; color: #999; font-weight: normal;">v1.0</span></h1>
+        <h1>🔮 (ugly) Krark Calculator <span style="font-size: 0.3em; color: #999; font-weight: normal;">v1.1</span></h1>
         
         <div class="input-section">
             <div class="input-row">
@@ -159,6 +159,11 @@
             <div class="checkbox-group">
                 <input type="checkbox" id="chkSKA" onchange="run()">
                 <label for="chkSKA">Storm-Kiln Artist (SKA)</label>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="chkLoop" checked onchange="run()">
+                <label for="chkLoop">Recast until resolved (loop mode)</label>
             </div>
             
             <div id="ritual">
@@ -293,6 +298,7 @@
         const d = document.getElementById('d');
         const chkRitual = document.getElementById('chkRitual');
         const chkSKA = document.getElementById('chkSKA');
+        const chkLoop = document.getElementById('chkLoop');
         const valPer = document.getElementById('valPer');
         const valCost = document.getElementById('valCost');
         const simResults = document.getElementById('simResults');
@@ -304,6 +310,7 @@
         const p = pSuccess(TH);
         const isRitual = chkRitual.checked;
         const isSKA = chkSKA.checked;
+        const isLoop = chkLoop.checked;
         const valuePerResolve = +valPer.value || 0;
         const costPerCast = +valCost.value || 0;
 
@@ -319,6 +326,7 @@
         log.push(`🎯 Starting with ${KR} Krark(s), ${TH} Thumb(s), ${DB} Doubler(s)`);
         if (isRitual) log.push(`💰 Ritual spell: ${valuePerResolve} mana per resolve, costs ${costPerCast} mana`);
         if (isSKA) log.push(`🏺 Storm-Kiln Artist ready`);
+        log.push(`🔄 Mode: ${isLoop ? 'Recast until resolved' : 'Single cast attempt'}`);
         log.push('');
 
         while (!resolved && iterations < 1000) {
@@ -343,8 +351,13 @@
                 log.push(`💥 All coins lost! Spell fizzles.`);
                 if (isSKA) log.push(`🏺 SKA creates 1 treasure`);
                 log.push(`📤 Spell goes to graveyard`);
-                log.push(`🔄 Trying to cast again...`);
-                log.push('');
+                if (isLoop) {
+                    log.push(`🔄 Trying to cast again...`);
+                    log.push('');
+                } else {
+                    resolved = true;
+                    log.push(`❌ Simulation ends - spell fizzled`);
+                }
             } else if (copies < TRIG) {
                 resolved = true;
                 totalStorm += currentStorm;
@@ -357,9 +370,16 @@
                 log.push(`🪙 All ${TRIG} coins won!`);
                 log.push(`📋 ${copies} copies created`);
                 if (isSKA) log.push(`🏺 SKA creates 1 treasure`);
-                log.push(`↩️ Original spell bounces back to hand`);
-                log.push(`🔄 Trying to cast again...`);
-                log.push('');
+                if (isLoop) {
+                    log.push(`↩️ Original spell bounces back to hand`);
+                    log.push(`🔄 Trying to cast again...`);
+                    log.push('');
+                } else {
+                    resolved = true;
+                    totalStorm += currentStorm;
+                    if (isRitual) totalManaGained += valuePerResolve;
+                    log.push(`✅ Original spell resolves (no loop mode)`);
+                }
             }
         }
 
