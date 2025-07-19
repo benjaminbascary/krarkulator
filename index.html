@@ -316,10 +316,10 @@
         let log = [];
         let resolved = false;
 
-        log.push(`🎯 Starting simulation with ${KR} Krark(s), ${TH} Thumb(s), ${DB} Doubler(s)`);
-        if (isRitual) log.push(`💰 Ritual: ${valuePerResolve} mana per resolve, ${costPerCast} mana per cast`);
-        if (isSKA) log.push(`🏺 Storm-Kiln Artist enabled`);
-        log.push('\\n📜 Casting spell...');
+        log.push(`🎯 Starting with ${KR} Krark(s), ${TH} Thumb(s), ${DB} Doubler(s)`);
+        if (isRitual) log.push(`💰 Ritual spell: ${valuePerResolve} mana per resolve, costs ${costPerCast} mana`);
+        if (isSKA) log.push(`🏺 Storm-Kiln Artist ready`);
+        log.push('');
 
         while (!resolved && iterations < 1000) {
             iterations++;
@@ -334,19 +334,32 @@
             }
 
             totalCopies += copies;
-            // Storm count: original spell + any that resolve (only when original resolves)
             const currentStorm = 1; // This cast
             if (isSKA) totalTreasures += currentStorm;
             
-            log.push(`Cast ${iterations}: ${copies} copies created${isSKA ? `, +${currentStorm} treasure` : ''}`);
-
-            if (copies < TRIG) {
+            log.push(`✨ Casted! Krark flips ${TRIG} coins...`);
+            
+            if (copies === 0) {
+                log.push(`💥 All coins lost! Spell fizzles.`);
+                if (isSKA) log.push(`🏺 SKA creates 1 treasure`);
+                log.push(`📤 Spell goes to graveyard`);
+                log.push(`🔄 Trying to cast again...`);
+                log.push('');
+            } else if (copies < TRIG) {
                 resolved = true;
-                totalStorm += currentStorm; // Only count storm when spell resolves
+                totalStorm += currentStorm;
                 if (isRitual) totalManaGained += valuePerResolve;
-                log.push(`✅ Original resolves!${isRitual ? ` +${valuePerResolve} mana` : ''}`);
+                log.push(`🎯 ${copies} coins won, ${TRIG - copies} lost`);
+                log.push(`📋 ${copies} copies created`);
+                if (isSKA) log.push(`🏺 SKA creates 1 treasure`);
+                log.push(`✅ Original spell resolves!${isRitual ? ` +${valuePerResolve} mana gained` : ''}`);
             } else {
-                log.push(`🔄 All copies created, recasting...`);
+                log.push(`🪙 All ${TRIG} coins won!`);
+                log.push(`📋 ${copies} copies created`);
+                if (isSKA) log.push(`🏺 SKA creates 1 treasure`);
+                log.push(`↩️ Original spell bounces back to hand`);
+                log.push(`🔄 Trying to cast again...`);
+                log.push('');
             }
         }
 
