@@ -274,36 +274,16 @@
             netTot = resTot * val - castsTot * cost;
         }
 
-        /* summary */
-        let txt =
-            `Krarks ……… ${KR}
-    Thumbs ……… ${TH}
-    Doublers …… ${DB}
-    
-    Per-trigger success …  ${pct(p)}
-    
-    Single cast
-    ––––––––––––––––––––––––
-    Chance original resolves …  ${pct(prOriginal)}
-    Expected copies ………………  ${nf.format(expCopies)}
-    Expected storm size ………  ${nf.format(expStorm)}`
-        + (chkSKA.checked ? `\nExpected treasures ………  ${nf.format(expTreasures)}` : '') + ``;
+        /* simplified summary */
+        let txt = `📋 Setup: ${KR} Krark(s), ${TH} Thumb(s), ${DB} Doubler(s)
+🎯 Success chance per trigger: ${pct(p)}
+📊 Chance original resolves: ${pct(prOriginal)}
+🔄 Expected casts to resolve: ${nf.format(castsTot)}`;
+        
         if (rit) {
-            txt += `\nExpected total resolves …  ${nf.format(expRes)}
-    Expected net value …………  ${fmtSigned(expNet, unit)}`;
+            txt += `\n💰 Expected net value: ${fmtSigned(netTot, unit)}`;
         }
-
-        txt += `
-    
-    Loop (recast until it sticks)
-    ––––––––––––––––––––––––––––––
-    Expected casts ………………  ${nf.format(castsTot)}
-    Expected copies total ……  ${nf.format(copiesTot)}
-    Expected storm total ………  ${nf.format(stormTot)}`
-        + (chkSKA.checked ? `\nExpected treasures total …  ${nf.format(treasuresTot)}` : '') + ``;
-        if (rit) {
-            txt += `\nExpected net value ………  ${fmtSigned(netTot, unit)}`;
-        }
+        
         out.textContent = txt;
     }
     
