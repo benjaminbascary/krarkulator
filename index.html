@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Krark Calculator</title>
+    <style>
+        body { font-family: monospace; margin: 20px; }
+        table { border-collapse: collapse; margin: 10px 0; }
+        th, td { border: 1px solid #ccc; padding: 5px; text-align: right; }
+        th { background-color: #f0f0f0; }
+        .hidden { display: none; }
+        input[type="number"] { width: 60px; }
+        pre { background: #f5f5f5; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Krark Calculator</h1>
+    
+    <div>
+        <label>Krarks: <input type="number" id="k" value="1" min="1" onchange="run()"></label>
+        <label>Thumbs: <input type="number" id="t" value="0" min="0" onchange="run()"></label>
+        <label>Doublers: <input type="number" id="d" value="0" min="0" onchange="run()"></label>
+        <label><input type="checkbox" id="chkSKA" onchange="run()"> Storm-Kiln Artist (SKA)</label>
+    </div>
+    
+    <div id="ritual">
+        <input type="checkbox" id="chkRitual" onchange="ritShown(); run()">
+        <label for="chkRitual">Ritual spell</label>
+        <div class="hidden">
+            <label>Value per resolve: <input type="number" id="valPer" value="0" step="0.01" onchange="run()"> mana</label>
+            <label>Cost per cast: <input type="number" id="valCost" value="0" step="0.01" onchange="run()"> mana</label>
+        </div>
+    </div>
+    
+    <div id="dist"></div>
+    <pre id="out"></pre>
+
+<script>
+    console.log('Hello World');
+    const nf = new Intl.NumberFormat(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const pct = x => nf.format(100 * x) + ' %';
+
+    function ritShown() { 
+        const ritual = document.getElementById('ritual').children[1];
+        ritual.classList.toggle('hidden', !document.getElementById('chkRitual').checked); 
+    }
+
+    const pSuccess = T => 1 - Math.pow(0.5, 1 << T);
+
+    function distribution(triggers, p) {
+        const q = 1 - p, P = Array(triggers + 1).fill(0);
+        for (let j = 0; j < triggers; j++) P[j] = Math.pow(p, j) * q;
+        P[triggers] = Math.pow(p, triggers);
+        return P;
+    }
+
+    function fmtSigned(x, unit = '') {
+        return (x > 0 ? '+' : '') + nf.format(x) + (unit ? ` ${unit}` : '');
+    }
+
+    function run() {
+        const k = document.getElementById('k');
+        const t = document.getElementById('t');
+        const d = document.getElementById('d');
+        const dist = document.getElementById('dist');
+        const out = document.getElementById('out');
+        const chkRitual = document.getElementById('chkRitual');
+        const valPer = document.getElementById('valPer');
+        const valCost = document.getElementById('valCost');
+        const chkSKA = document.getElementById('chkSKA');
+        
+        const KR = +k.value || 1, TH = +t.value || 0, DB = +d.value || 0;
+        const TRIG = KR * (1 + DB);
+        const p = pSuccess(TH);
+        const P = distribution(TRIG, p);
+
+        let expCopies = 0, expStorm = 0, expTreasures = 0;
+        P.forEach((pr, j) => { 
+            expCopies += j * pr; 
+            expStorm += (j + (j === TRIG ? 1 : 0)) * pr;
+            if (chkSKA.checked) {
+                expTreasures += (j + (j === TRIG ? 1 : 0)) * pr;
+            }
+        });
+        const prOriginal = P[TRIG];
+
+        /* probability table */
+        let html = '<h3>Single cast</h3><table><tr><th>Copies</th><th>Prob.</th><th>Storm</th></tr>';
+        P.forEach((pr, j) => {
+            const storm = j + (j === TRIG ? 1 : 0);
+            html += `<tr><td>${j}</td><td>${pct(pr)}</td><td>${storm}</td></tr>`;
+        });
+        html += '</table>';
+        dist.innerHTML = html;
+
+        /* ritual? */
+        const rit = chkRitual.checked;
+        let val = 0, cost = 0, expRes = 0, expNet = 0, unit = '';
+        if (rit) {
+            val = +valPer.value || 0; cost = +valCost.value || 0; unit = 'mana';
+            expRes = expCopies + prOriginal;
+            expNet = expRes * val - cost;
+        }
+
+        /* loop analytics */
+        const castsTot = 1 / prOriginal;
+        const copiesTot = expCopies / prOriginal;
+        const stormTot = expStorm / prOriginal;
+        const treasuresTot = chkSKA.checked ? expTreasures / prOriginal : 0;
+        let netTot = 0;
+        if (rit) {
+            const resTot = copiesTot + 1;
+            netTot = resTot * val - castsTot * cost;
+        }
+
+        /* summary */
+        let txt =
+            `Krarks ……… ${KR}
+    Thumbs ……… ${TH}
+    Doublers …… ${DB}
+    
+    Per-trigger success …  ${pct(p)}
+    
+    Single cast
+    ––––––––––––––––––––––––
+    Chance original resolves …  ${pct(prOriginal)}
+    Expected copies ………………  ${nf.format(expCopies)}
+    Expected storm size ………  ${nf.format(expStorm)}`
+        + (chkSKA.checked ? `\nExpected treasures ………  ${nf.format(expTreasures)}` : '') + ``;
+        if (rit) {
+            txt += `\nExpected total resolves …  ${nf.format(expRes)}
+    Expected net value …………  ${fmtSigned(expNet, unit)}`;
+        }
+
+        txt += `
+    
+    Loop (recast until it sticks)
+    ––––––––––––––––––––––––––––––
+    Expected casts ………………  ${nf.format(castsTot)}
+    Expected copies total ……  ${nf.format(copiesTot)}
+    Expected storm total ………  ${nf.format(stormTot)}`
+        + (chkSKA.checked ? `\nExpected treasures total …  ${nf.format(treasuresTot)}` : '') + ``;
+        if (rit) {
+            txt += `\nExpected net value ………  ${fmtSigned(netTot, unit)}`;
+        }
+        out.textContent = txt;
+    }
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        ritShown();
+        run();
+    });
+</script>
+</body>
+</html>
