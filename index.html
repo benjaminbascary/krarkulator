@@ -3,38 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Krark Calculator</title>
+    <title>Ugly Krarkulator</title>
     <style>
-        body { font-family: monospace; margin: 20px; }
-        table { border-collapse: collapse; margin: 10px 0; }
-        th, td { border: 1px solid #ccc; padding: 5px; text-align: right; }
-        th { background-color: #f0f0f0; }
+        * { box-sizing: border-box; }
+        body { 
+            font-family: monospace; 
+            margin: 0; 
+            padding: 16px;
+            background: #f8f9fa;
+            line-height: 1.4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 24px;
+            font-size: 1.5rem;
+        }
+        .input-section {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 16px;
+        }
+        .input-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 120px;
+            flex: 1;
+        }
+        label {
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+            color: #555;
+        }
+        input[type="number"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            width: 100%;
+        }
+        input[type="checkbox"] {
+            margin-right: 8px;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin: 12px 0;
+        }
+        .button-section {
+            text-align: center;
+            margin: 16px 0;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: monospace;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        button:active {
+            transform: translateY(1px);
+        }
+        .results {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 16px;
+        }
+        .simulation-results {
+            background: #e8f5e8;
+            border-left: 4px solid #27ae60;
+        }
+        table { 
+            border-collapse: collapse; 
+            width: 100%;
+            margin: 10px 0;
+            font-size: 0.9rem;
+        }
+        th, td { 
+            border: 1px solid #ddd; 
+            padding: 8px; 
+            text-align: right; 
+        }
+        th { 
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
         .hidden { display: none; }
-        input[type="number"] { width: 60px; }
-        pre { background: #f5f5f5; padding: 10px; }
+        pre { 
+            background: #f8f9fa; 
+            padding: 12px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+        .simulation-log {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 12px;
+            border-radius: 4px;
+            margin-top: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        @media (max-width: 480px) {
+            body { padding: 8px; }
+            h1 { font-size: 1.3rem; }
+            .input-row { flex-direction: column; }
+            .input-group { min-width: unset; }
+            table, th, td { font-size: 0.8rem; }
+            pre { font-size: 0.8rem; }
+        }
     </style>
 </head>
 <body>
-    <h1>Krark Calculator</h1>
-    
-    <div>
-        <label>Krarks: <input type="number" id="k" value="1" min="1" onchange="run()"></label>
-        <label>Thumbs: <input type="number" id="t" value="0" min="0" onchange="run()"></label>
-        <label>Doublers: <input type="number" id="d" value="0" min="0" onchange="run()"></label>
-        <label><input type="checkbox" id="chkSKA" onchange="run()"> Storm-Kiln Artist (SKA)</label>
-    </div>
-    
-    <div id="ritual">
-        <input type="checkbox" id="chkRitual" onchange="ritShown(); run()">
-        <label for="chkRitual">Ritual spell</label>
-        <div class="hidden">
-            <label>Value per resolve: <input type="number" id="valPer" value="0" step="0.01" onchange="run()"> mana</label>
-            <label>Cost per cast: <input type="number" id="valCost" value="0" step="0.01" onchange="run()"> mana</label>
+    <div class="container">
+        <h1>🔮 Krark Calculator</h1>
+        
+        <div class="input-section">
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="k">Krarks</label>
+                    <input type="number" id="k" value="1" min="1" onchange="run()">
+                </div>
+                <div class="input-group">
+                    <label for="t">Thumbs</label>
+                    <input type="number" id="t" value="0" min="0" onchange="run()">
+                </div>
+                <div class="input-group">
+                    <label for="d">Doublers</label>
+                    <input type="number" id="d" value="0" min="0" onchange="run()">
+                </div>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="chkSKA" onchange="run()">
+                <label for="chkSKA">Storm-Kiln Artist (SKA)</label>
+            </div>
+            
+            <div id="ritual">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="chkRitual" onchange="ritShown(); run()">
+                    <label for="chkRitual">Ritual spell</label>
+                </div>
+                <div class="hidden">
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="valPer">Value per resolve (mana)</label>
+                            <input type="number" id="valPer" value="0" step="0.01" onchange="run()">
+                        </div>
+                        <div class="input-group">
+                            <label for="valCost">Cost per cast (mana)</label>
+                            <input type="number" id="valCost" value="0" step="0.01" onchange="run()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="button-section">
+            <button onclick="runSimulation()">🎲 Run Simulation</button>
+        </div>
+        
+        <div class="results" id="dist"></div>
+        <div class="results">
+            <pre id="out"></pre>
+        </div>
+        <div class="results simulation-results hidden" id="simResults">
+            <h3>🎯 Simulation Results</h3>
+            <div id="simSummary"></div>
+            <div class="simulation-log" id="simLog"></div>
         </div>
     </div>
-    
-    <div id="dist"></div>
-    <pre id="out"></pre>
 
 <script>
     console.log('Hello World');
@@ -42,7 +202,7 @@
     const pct = x => nf.format(100 * x) + ' %';
 
     function ritShown() { 
-        const ritualInputs = document.getElementById('ritual').children[2];
+        const ritualInputs = document.getElementById('ritual').children[1];
         ritualInputs.classList.toggle('hidden', !document.getElementById('chkRitual').checked); 
     }
 
@@ -147,6 +307,95 @@
         out.textContent = txt;
     }
     
+    function runSimulation() {
+        const k = document.getElementById('k');
+        const t = document.getElementById('t');
+        const d = document.getElementById('d');
+        const chkRitual = document.getElementById('chkRitual');
+        const chkSKA = document.getElementById('chkSKA');
+        const valPer = document.getElementById('valPer');
+        const valCost = document.getElementById('valCost');
+        const simResults = document.getElementById('simResults');
+        const simSummary = document.getElementById('simSummary');
+        const simLog = document.getElementById('simLog');
+
+        const KR = +k.value || 1, TH = +t.value || 0, DB = +d.value || 0;
+        const TRIG = KR * (1 + DB);
+        const p = pSuccess(TH);
+        const isRitual = chkRitual.checked;
+        const isSKA = chkSKA.checked;
+        const valuePerResolve = +valPer.value || 0;
+        const costPerCast = +valCost.value || 0;
+
+        let iterations = 0;
+        let totalCopies = 0;
+        let totalTreasures = 0;
+        let totalManaSpent = 0;
+        let totalManaGained = 0;
+        let log = [];
+        let resolved = false;
+
+        log.push(`🎯 Starting simulation with ${KR} Krark(s), ${TH} Thumb(s), ${DB} Doubler(s)`);
+        if (isRitual) log.push(`💰 Ritual: ${valuePerResolve} mana per resolve, ${costPerCast} mana per cast`);
+        if (isSKA) log.push(`🏺 Storm-Kiln Artist enabled`);
+        log.push('\\n📜 Casting spell...');
+
+        while (!resolved && iterations < 1000) {
+            iterations++;
+            totalManaSpent += costPerCast;
+            let copies = 0;
+            let stormCount = 1;
+
+            for (let trigger = 0; trigger < TRIG; trigger++) {
+                const success = Math.random() < p;
+                if (success) {
+                    copies++;
+                    stormCount++;
+                }
+            }
+
+            totalCopies += copies;
+            if (isSKA) totalTreasures += stormCount;
+            
+            log.push(`Cast ${iterations}: ${copies} copies created, storm ${stormCount}${isSKA ? `, ${stormCount} treasures` : ''}`);
+
+            if (copies < TRIG) {
+                resolved = true;
+                if (isRitual) totalManaGained += valuePerResolve;
+                log.push(`✅ Original resolves! ${isRitual ? `+${valuePerResolve} mana` : ''}`);
+            } else {
+                log.push(`🔄 All copies created, recasting...`);
+            }
+        }
+
+        if (!resolved) {
+            log.push('⚠️ Simulation stopped at 1000 iterations');
+        }
+
+        const netMana = totalManaGained - totalManaSpent;
+
+        let summary = `
+<strong>📊 Simulation Complete</strong><br>
+🔄 Iterations: ${iterations}<br>
+📋 Total copies created: ${totalCopies}<br>
+⚡ Total storm count: ${totalCopies + iterations}<br>`;
+
+        if (isSKA) {
+            summary += `🏺 Total treasures: ${totalTreasures}<br>`;
+        }
+
+        if (isRitual) {
+            summary += `💰 Total mana spent: ${totalManaSpent.toFixed(2)}<br>`;
+            summary += `💰 Total mana gained: ${totalManaGained.toFixed(2)}<br>`;
+            summary += `💰 Net mana: ${netMana >= 0 ? '+' : ''}${netMana.toFixed(2)}<br>`;
+        }
+
+        simSummary.innerHTML = summary;
+        simLog.innerHTML = '<strong>🎬 Simulation Log:</strong><br>' + log.join('<br>');
+        simResults.classList.remove('hidden');
+        simResults.scrollIntoView({ behavior: 'smooth' });
+    }
+
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
         ritShown();
